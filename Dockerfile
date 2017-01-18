@@ -15,7 +15,7 @@ RUN \
 	add-apt-repository -y ppa:nginx/stable && \
 	add-apt-repository -y ppa:rwky/graphicsmagick && \
 	apt-get update && \
-	apt-get -y install nginx mysql-server mysql-client php5-fpm php5-mysql php5-curl php5-mcrypt graphicsmagick ffmpeg pwgen wget unzip
+	apt-get -y install nginx mysql-client php5-fpm php5-mysql php5-curl php5-mcrypt graphicsmagick ffmpeg pwgen wget unzip
 
 # Configuration
 RUN \
@@ -27,7 +27,7 @@ RUN \
 	sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 101M/g" /etc/php5/fpm/php.ini && \
 	sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf && \
 	sed -i -e "s/;pm.max_requests\s*=\s*500/pm.max_requests = 500/g" /etc/php5/fpm/pool.d/www.conf && \
-	echo "env[KOKEN_HOST] = 'koken-docker-lemp'" >> /etc/php5/fpm/pool.d/www.conf && \
+	echo "env[KOKEN_HOST] = 'koken'" >> /etc/php5/fpm/pool.d/www.conf && \
 	cp /etc/php5/fpm/pool.d/www.conf /etc/php5/fpm/pool.d/images.conf && \
 	sed -i -e "s/\[www\]/[images]/" /etc/php5/fpm/pool.d/images.conf && \
 	sed -i -e "s#listen\s*=\s*/var/run/php5-fpm\.sock#listen = /var/run/php5-fpm-images.sock#" /etc/php5/fpm/pool.d/images.conf && \
@@ -38,7 +38,6 @@ ADD ./conf/nginx-site.conf /etc/nginx/sites-available/default
 
 # Add runit files for each service
 ADD ./services/nginx /etc/service/nginx/run
-ADD ./services/mysql /etc/service/mysql/run
 ADD ./services/php-fpm /etc/service/php-fpm/run
 ADD ./services/koken /etc/service/koken/run
 
@@ -53,17 +52,20 @@ ADD ./shell/koken.sh /etc/cron.daily/koken
 # Startup script
 ADD ./shell/start.sh /etc/my_init.d/001_koken.sh
 
+# wait-for-it
+RUN curl -s https://raw.githubusercontent.com/vishnubob/wait-for-it/e1f115e4ca285c3c24e847c4dd4be955e0ed51c2/wait-for-it.sh > /wait-for-it.sh
+
 # Execute permissions where needed
 RUN \
 	chmod +x /etc/service/nginx/run && \
-	chmod +x /etc/service/mysql/run && \
 	chmod +x /etc/service/php-fpm/run && \
 	chmod +x /etc/service/koken/run && \
 	chmod +x /etc/cron.daily/koken && \
-	chmod +x /etc/my_init.d/001_koken.sh
+	chmod +x /etc/my_init.d/001_koken.sh && \
+	chmod +x /wait-for-it.sh
 
 # Data volumes
-VOLUME ["/usr/share/nginx/www", "/var/lib/mysql"]
+VOLUME ["/usr/share/nginx/www"]
 
 # Expose 8080 to the host
 EXPOSE 8080

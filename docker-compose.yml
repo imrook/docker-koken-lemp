@@ -1,0 +1,25 @@
+version: '2'
+services:
+    koken:
+        build: .
+        environment:
+            - MYSQL_ROOT_PASSWORD=_change_me!
+            - MYSQL_HOST=mysql
+        command:
+            ["/wait-for-it.sh", "mysql:3306", "-t", "120", "--", "/sbin/my_init"]
+        ports:
+            - "80:8080"
+        volumes:
+            - ./koken-storage:/usr/share/nginx/www
+    mysql:
+        image: mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=_change_me!
+        volumes:
+            - mysql-data:/var/lib/mysql
+            # To load an existing database, place dump with `.sql` extension in
+            # this dir and uncomment volume below
+            #- ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
+volumes:
+    mysql-data:
