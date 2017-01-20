@@ -1,6 +1,7 @@
 # Docker + Koken + nginx = ♥
 
-This official Koken Docker image installs the latest version of [Koken](http://koken.me) and all necessary system requirements.
+This is a fork of the official [Koken Docker image](https://github.com/koken/docker-koken-lemp) It differs from the original in
+that it uses docker-compose to build and manage [Koken](http://koken.me) and MySQL in two separate containers.
 
 ## Features
 
